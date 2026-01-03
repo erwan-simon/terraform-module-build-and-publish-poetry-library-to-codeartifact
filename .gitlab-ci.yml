@@ -2,7 +2,6 @@ variables:
   PROJECT_NAME: poc
   DOMAIN_NAME: terraform_module_build_image_and_push_to_ecr
   STAGE_NAME: $CI_COMMIT_REF_SLUG
-  TARGET_REPO_NAME: "metabase-on-aws"
 
 include:
   - project: 'erwan.simon/devops-platform-ci-templates'

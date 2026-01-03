@@ -1,0 +1,29 @@
+#!/bin/bash
+
+account_id=$(aws sts get-caller-identity --query Account --output text)
+pyproject_file_path=$1
+artifact_repository_domain_name=$2
+artifact_repository_endpoint=$3
+
+cd $pyproject_file_path
+
+if [ -z "${artifact_repository_endpoint}" ];
+then
+  echo "No dependency artifact repository set"
+else
+  artifact_repository_token=$(aws codeartifact get-authorization-token \
+    --domain $artifact_repository_domain_name \
+    --domain-owner $account_id \
+    --query authorizationToken \
+    --output text)
+  poetry config repositories.target ${artifact_repository_endpoint}
+  poetry config http-basic.target aws $artifact_repository_token
+fi
+
+if ! poetry publish --build --no-interaction -r target;
+then
+  echo "Cannot publish library"
+  exit 1
+fi
+
+cd -

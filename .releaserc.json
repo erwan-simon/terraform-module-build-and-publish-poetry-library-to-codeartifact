@@ -5,8 +5,8 @@
 	],
 	"plugins": [
 	  [
-		"@semantic-release/gitlab",
-		{
+        "@semantic-release/github",
+    {
 				  "assets": [
 					  {
 						  "path": "CHANGELOG.md",

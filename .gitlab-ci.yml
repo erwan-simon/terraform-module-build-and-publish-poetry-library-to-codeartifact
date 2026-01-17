@@ -8,11 +8,9 @@ include:
     ref: 'v2.0.3'
     file:
       - 'base.yml'
-      - 'release.yml'
       - 'mirror_to_github.yml'
 
 stages:
   - init
   - security
-  - release
   - mirror_to_github

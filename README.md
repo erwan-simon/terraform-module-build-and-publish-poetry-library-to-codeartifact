@@ -186,12 +186,14 @@ The module dynamically configures Poetry with:
 ├── .gitlab-ci.yml          # GitLab CI/CD pipeline configuration
 ├── .releaserc.json         # Semantic-release configuration
 ├── .gitignore              # Git ignore patterns
-└── iac/                    # Terraform module directory
-    ├── variables.tf        # Input variable definitions
-    ├── locals.tf           # Local value for version extraction
-    ├── build_and_publish_code.tf    # Main resource definition
-    ├── build_and_publish_code.sh    # Build and publish script
-    └── outputs.tf          # Output variable definitions
+├── iac/                    # Terraform module directory
+│   ├── variables.tf        # Input variable definitions
+│   ├── locals.tf           # Local value for version extraction
+│   ├── build_and_publish_code.tf    # Main resource definition
+│   ├── build_and_publish_code.sh    # Build and publish script
+│   └── outputs.tf          # Output variable definitions
+└── tests/                  # End-to-end functional tests
+    └── simple/             # Publishes a minimal Poetry lib and pip-installs it back to assert it is consumable
 ```
 
 ### A. Terraform Module (`iac/`)
@@ -206,8 +208,12 @@ Contains all Terraform configuration files that define the module's behavior:
 
 ### B. CI/CD Configuration
 
-- **.gitlab-ci.yml**: Defines the GitLab CI/CD pipeline with stages for initialization, security scanning, release automation, and GitHub mirroring
+- **.gitlab-ci.yml**: Defines the GitLab CI/CD pipeline with stages for initialization, security scanning, functional tests, release automation, and GitHub mirroring
 - **.releaserc.json**: Configures semantic-release for automated versioning based on conventional commits
+
+### C. Functional Tests (`tests/`)
+
+End-to-end tests that exercise the module against real AWS resources. The `tests/simple/` test provisions a CodeArtifact domain + repositories, publishes a minimal Poetry library through the module, then `pip install`s it back and runs its entrypoint to assert the publication is actually consumable (including transitive dependency resolution through an upstream PyPI connection). Each test is a self-contained Terraform stack; see `tests/simple/README.md` for usage. The `test_simple` job in `.gitlab-ci.yml` runs this stack and tears it down in `after_script`.
 
 ## IX. Limitations / Assumptions
 

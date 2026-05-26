@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "tfmodule-codeartifact-test"
+version = "0.1.0"
+description = "Minimal Poetry library used by tests/simple to exercise the terraform module"
+authors = ["test <test@example.com>"]
+packages = [{ include = "tfmodule_codeartifact_test" }]
+
+[tool.poetry.dependencies]
+python = ">=3.9,<4.0"
+requests = "^2.31"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,6 +1,6 @@
 variables:
   PROJECT_NAME: poc
-  DOMAIN_NAME: terraform_module_build_image_and_push_to_ecr
+  DOMAIN_NAME: terraform_module_build_and_publish_poetry_library_to_codeartifact
   STAGE_NAME: $CI_COMMIT_REF_SLUG
 
 include:
@@ -13,4 +13,18 @@ include:
 stages:
   - init
   - security
+  - test
   - mirror_to_github
+
+test_simple:
+  stage: test
+  script:
+    - cd tests/simple
+    - terraform init -input=false
+    - terraform apply -auto-approve -input=false
+  after_script:
+    - cd tests/simple
+    - terraform destroy -auto-approve -input=false
+  except:
+    refs:
+      - tags

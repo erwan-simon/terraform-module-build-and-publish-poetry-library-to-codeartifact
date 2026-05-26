@@ -1,4 +1,6 @@
-resource "null_resource" "build_and_publish_code" {
+resource "terraform_data" "build_and_publish_code" {
+  triggers_replace = [local.poetry_version]
+
   provisioner "local-exec" {
     working_dir = path.module
     command = join(" ", [
@@ -8,8 +10,5 @@ resource "null_resource" "build_and_publish_code" {
       var.artifact_repository_domain_name,
       var.artifact_repository_endpoint
     ])
-  }
-  triggers = {
-    poetry_version_change = local.poetry_version
   }
 }

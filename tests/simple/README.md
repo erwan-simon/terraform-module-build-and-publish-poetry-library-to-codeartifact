@@ -6,7 +6,7 @@ End-to-end functional test for the module. Provisions a CodeArtifact domain + re
 
 1. Creates an `aws_codeartifact_domain` and two `aws_codeartifact_repository` resources: a `pypi-store` upstream with an external connection to public PyPI (so transitive deps resolve), and a `main` repo wired to that upstream.
 2. Calls the module at `../../iac` with `code_path` pointing to `./lib` (a minimal Poetry project depending on `requests`). The module publishes version `0.1.0` to the `main` repo.
-3. Runs `verify.sh` via a `null_resource`. The script creates a venv, logs pip into the CodeArtifact repo, `pip install`s `tfmodule-codeartifact-test==0.1.0`, asserts the transitive `requests` dependency was pulled, then runs the lib's entrypoint and checks the output.
+3. Runs `verify.sh` via a `terraform_data` resource. The script creates a venv, logs pip into the CodeArtifact repo, `pip install`s `tfmodule-codeartifact-test==0.1.0`, asserts the transitive `requests` dependency was pulled, then runs the lib's entrypoint and checks the output.
 
 If any step fails — publish, install, transitive dep missing, wrong output — `terraform apply` fails.
 
@@ -37,5 +37,5 @@ A successful apply ends with `[verify] PASS` in the local-exec output.
 
 ## Notes
 
-- The `null_resource.verify` is triggered on the package version, so re-running `terraform apply` without bumping the lib version will not re-execute the publish or verify steps (matching the module's own behavior). To force a re-run: `terraform taint module.publish.null_resource.build_and_publish_code` and `terraform taint null_resource.verify`.
+- The `terraform_data.verify` resource is keyed on the package version via `triggers_replace`, so re-running `terraform apply` without bumping the lib version will not re-execute the publish or verify steps (matching the module's own behavior). To force a re-run: `terraform taint module.publish.terraform_data.build_and_publish_code` and `terraform taint terraform_data.verify`.
 - Cleanup is complete via `terraform destroy`: CodeArtifact repositories and the domain are removed.

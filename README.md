@@ -24,7 +24,7 @@ The module is particularly useful for organizations that:
 The module follows a simple but effective architecture:
 
 1. **Version Detection**: Extracts the version number from the `pyproject.toml` file using regex pattern matching
-2. **Trigger Mechanism**: Uses a Terraform `null_resource` with a trigger based on the detected Poetry version to ensure republication only when the version changes
+2. **Trigger Mechanism**: Uses a Terraform `terraform_data` resource with `triggers_replace` based on the detected Poetry version to ensure republication only when the version changes
 3. **Build and Publish Script**: Executes a bash script that:
    - Authenticates with AWS CodeArtifact using AWS STS credentials
    - Configures Poetry with the CodeArtifact repository credentials
@@ -34,7 +34,7 @@ The module is stateless and relies on Terraform's change detection mechanism to 
 
 ### Key Components
 
-- **Terraform Resources**: Define the automation workflow using `null_resource` with local-exec provisioner
+- **Terraform Resources**: Define the automation workflow using `terraform_data` with local-exec provisioner
 - **Shell Script**: Handles the actual build and publish operations with proper authentication
 - **Version Tracking**: Automatically detects version changes to trigger rebuilds
 
@@ -42,7 +42,7 @@ The module is stateless and relies on Terraform's change detection mechanism to 
 
 ### Required Tools
 
-- **Terraform**: Version compatible with `null_resource` and `local-exec` provisioner
+- **Terraform**: Version >= 1.4 (for built-in `terraform_data` resource)
 - **AWS CLI**: Configured with appropriate credentials and permissions
 - **Poetry**: Python dependency management and packaging tool
 - **Bash**: Shell environment for executing the build script
@@ -116,7 +116,7 @@ The module automatically detects version changes in the `pyproject.toml` file. W
 If you need to force a republish without a version change, you can taint the resource:
 
 ```bash
-terraform taint module.publish_library.null_resource.build_and_publish_code
+terraform taint module.publish_library.terraform_data.build_and_publish_code
 terraform apply
 ```
 
@@ -124,12 +124,12 @@ terraform apply
 
 ### Terraform Resources
 
-#### `null_resource.build_and_publish_code`
+#### `terraform_data.build_and_publish_code`
 
 The primary resource that orchestrates the build and publish process.
 
 - **Provisioner**: Uses `local-exec` to execute the bash script
-- **Triggers**: Configured to re-execute when the Poetry version changes
+- **Triggers**: `triggers_replace` set to the detected Poetry version — the resource is replaced (and the provisioner re-runs) whenever the version changes
 - **Working Directory**: Executes from the module's directory
 
 #### Script: `build_and_publish_code.sh`
@@ -202,7 +202,7 @@ Contains all Terraform configuration files that define the module's behavior:
 
 - **variables.tf**: Defines the required input parameters for the module
 - **locals.tf**: Extracts and parses the Poetry version from `pyproject.toml` using regex
-- **build_and_publish_code.tf**: Defines the `null_resource` that triggers the build and publish process
+- **build_and_publish_code.tf**: Defines the `terraform_data` resource that triggers the build and publish process
 - **outputs.tf**: Exports the code path for reference by parent modules
 - **build_and_publish_code.sh**: Bash script that handles AWS authentication, Poetry configuration, and package publication
 

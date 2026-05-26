@@ -18,6 +18,26 @@ else
     --output text)
   poetry config repositories.target ${artifact_repository_endpoint}
   poetry config http-basic.target aws $artifact_repository_token
+
+  artifact_repository_name=$(echo "${artifact_repository_endpoint%/}" | sed -E 's|.*/pypi/([^/]+)$|\1|')
+  package_name=$(poetry version | awk '{print $1}')
+  package_version=$(poetry version --short)
+
+  existing_version=$(aws codeartifact list-package-versions \
+    --domain "$artifact_repository_domain_name" \
+    --domain-owner "$account_id" \
+    --repository "$artifact_repository_name" \
+    --format pypi \
+    --package "$package_name" \
+    --query "versions[?version=='$package_version'].version" \
+    --output text 2>/dev/null || echo "")
+
+  if [ -n "$existing_version" ]; then
+    printf '\033[33m[warning] version %s of %s already published to %s, skipping publish\033[0m\n' \
+      "$package_version" "$package_name" "$artifact_repository_name"
+    cd -
+    exit 0
+  fi
 fi
 
 rm -rf dist

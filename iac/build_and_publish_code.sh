@@ -20,6 +20,8 @@ else
   poetry config http-basic.target aws $artifact_repository_token
 fi
 
+rm -rf dist
+
 if ! poetry publish --build --no-interaction -r target;
 then
   echo "Cannot publish library"

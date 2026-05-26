@@ -17,7 +17,8 @@ else
     --query authorizationToken \
     --output text)
   poetry config repositories.target ${artifact_repository_endpoint}
-  poetry config http-basic.target aws $artifact_repository_token
+  export POETRY_HTTP_BASIC_TARGET_USERNAME=aws
+  export POETRY_HTTP_BASIC_TARGET_PASSWORD=$artifact_repository_token
 
   artifact_repository_name=$(echo "${artifact_repository_endpoint%/}" | sed -E 's|.*/pypi/([^/]+)$|\1|')
   package_name=$(poetry version | awk '{print $1}')

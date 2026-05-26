@@ -48,4 +48,26 @@ then
   exit 1
 fi
 
+if [ -n "${artifact_repository_endpoint}" ]; then
+  sleep 5
+
+  published_version=$(aws codeartifact list-package-versions \
+    --domain "$artifact_repository_domain_name" \
+    --domain-owner "$account_id" \
+    --repository "$artifact_repository_name" \
+    --format pypi \
+    --package "$package_name" \
+    --query "versions[?version=='$package_version'].version" \
+    --output text 2>/dev/null || echo "")
+
+  if [ -z "$published_version" ]; then
+    printf '\033[31m[error] poetry publish reported success but version %s of %s was not found in %s\033[0m\n' \
+      "$package_version" "$package_name" "$artifact_repository_name"
+    exit 1
+  fi
+
+  printf '\033[32m[ok] version %s of %s confirmed published to %s\033[0m\n' \
+    "$package_version" "$package_name" "$artifact_repository_name"
+fi
+
 cd -
